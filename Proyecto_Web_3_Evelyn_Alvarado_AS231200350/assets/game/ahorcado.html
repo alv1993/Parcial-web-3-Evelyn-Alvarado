@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Ahorcado Simple</title>
+<style>
+    body { font-family: Arial; text-align: center; padding: 20px; }
+</style>
+</head>
+<body>
+
+<h2>Ahorcado Simple</h2>
+<p>Palabra oculta: <span id="word">_ _ _ _</span></p>
+
+<input type="text" id="letter" maxlength="1">
+<button onclick="guess()">Adivinar</button>
+
+<p id="result"></p>
+
+<script>
+let word = "DATA";
+let display = ["_", "_", "_", "_"];
+
+function guess() {
+    let l = document.getElementById("letter").value.toUpperCase();
+    let found = false;
+
+    for (let i = 0; i < word.length; i++) {
+        if (word[i] === l) {
+            display[i] = l;
+            found = true;
+        }
+    }
+
+    document.getElementById("word").innerText = display.join(" ");
+
+    if (!found) {
+        document.getElementById("result").innerText = "Incorrecto 😢";
+    } else {
+        document.getElementById("result").innerText = "";
+    }
+
+    if (display.join("") === word) {
+        document.getElementById("result").innerText = "¡Ganaste! 🎉";
+    }
+
+    document.getElementById("letter").value = "";
+}
+</script>
+
+</body>
+</html>

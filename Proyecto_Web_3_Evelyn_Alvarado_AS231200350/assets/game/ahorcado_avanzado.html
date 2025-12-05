@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ahorcado Avanzado</title>
+<style>
+  body{font-family:Inter, Arial; color:#071124; background:linear-gradient(180deg,#eaf2ff,#fff); margin:0; padding:18px}
+  .wrap{max-width:700px;margin:0 auto;background:#fff;border-radius:12px;padding:16px;box-shadow:0 10px 30px rgba(2,6,23,0.08)}
+  canvas{background:#f8fafc;border-radius:8px;display:block;margin:10px auto}
+  .word{font-size:30px;letter-spacing:8px;text-align:center;margin:12px 0}
+  .keys{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .key{padding:10px 12px;border-radius:8px;background:#f1f5f9;border:1px solid #e2e8f0;cursor:pointer;user-select:none}
+  .key.disabled{opacity:0.4;cursor:not-allowed}
+  .status{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h2 style="margin:0;text-align:center">Ahorcado Avanzado</h2>
+  <p style="text-align:center;margin-top:6px">Adivina la palabra antes de perder 6 intentos.</p>
+  <canvas id="canvas" width="320" height="240"></canvas>
+  <div class="word" id="display">_ _ _ _ _</div>
+  <div class="keys" id="keyboard"></div>
+  <div class="status">
+    <div>Intentos restantes: <span id="tries">6</span></div>
+    <div><button id="reset">Reiniciar</button></div>
+  </div>
+</div>
+
+<script>
+const words = ["BASE","NUBE","SQL","MONGO","TABLA","INDICE","DDL","DATA","QUERY","ESQUEMA"];
+let word = words[Math.floor(Math.random()*words.length)];
+let display = Array.from(word).map(()=>"_");
+let tries = 6;
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+function renderHangman(n){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle="#0f1724"; ctx.lineWidth=3;
+  // base
+  ctx.beginPath(); ctx.moveTo(20,220); ctx.lineTo(200,220); ctx.stroke();
+  // pole
+  ctx.beginPath(); ctx.moveTo(60,220); ctx.lineTo(60,20); ctx.lineTo(140,20); ctx.lineTo(140,40); ctx.stroke();
+  if(n<6) { // head
+    ctx.beginPath(); ctx.arc(140,60,20,0,Math.PI*2); ctx.stroke();
+  }
+  if(n<5){ ctx.beginPath(); ctx.moveTo(140,80); ctx.lineTo(140,140); ctx.stroke(); } // body
+  if(n<4){ ctx.beginPath(); ctx.moveTo(140,90); ctx.lineTo(110,120); ctx.stroke(); } // left arm
+  if(n<3){ ctx.beginPath(); ctx.moveTo(140,90); ctx.lineTo(170,120); ctx.stroke(); } // right arm
+  if(n<2){ ctx.beginPath(); ctx.moveTo(140,140); ctx.lineTo(120,180); ctx.stroke(); } // left leg
+  if(n<1){ ctx.beginPath(); ctx.moveTo(140,140); ctx.lineTo(160,180); ctx.stroke(); } // right leg
+}
+
+function updateDisplay(){ document.getElementById('display').innerText = display.join(' '); document.getElementById('tries').innerText = tries; }
+
+function makeKeyboard(){
+  const kb = document.getElementById('keyboard');
+  kb.innerHTML='';
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(ch=>{
+    const btn = document.createElement('button');
+    btn.className='key';
+    btn.textContent=ch;
+    btn.addEventListener('click', ()=> handleGuess(ch, btn));
+    kb.appendChild(btn);
+  });
+}
+
+function handleGuess(letter, btn){
+  if(btn.classList.contains('disabled')) return;
+  btn.classList.add('disabled');
+  let found = false;
+  for(let i=0;i<word.length;i++){
+    if(word[i]===letter){ display[i]=letter; found=true; }
+  }
+  if(!found){ tries--; }
+  updateDisplay();
+  renderHangman(tries);
+  checkEnd();
+}
+
+function checkEnd(){
+  if(!display.includes('_')){ setTimeout(()=> alert('¡Ganaste! 🎉 Palabra: '+word),100); disableAll(); }
+  if(tries<=0){ setTimeout(()=> alert('Perdiste 😢 La palabra era: '+word),100); disableAll(); }
+}
+
+function disableAll(){ document.querySelectorAll('.key').forEach(k=>k.classList.add('disabled')); }
+
+document.getElementById('reset').addEventListener('click', ()=> {
+  word = words[Math.floor(Math.random()*words.length)];
+  display = Array.from(word).map(()=>"_"); tries=6; updateDisplay(); makeKeyboard(); renderHangman(tries);
+});
+
+makeKeyboard(); updateDisplay(); renderHangman(tries);
+</script>
+</body>
+</html>
